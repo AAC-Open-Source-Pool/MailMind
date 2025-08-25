@@ -55,9 +55,10 @@ def classify_emails(useremails):
     # Finally, we print the prediction for each test email. If the model predicts '1', it means the email is spam.
     # If it predicts '0', it means the email is not spam.
     result = []
-    for i, email in enumerate(useremails):
+    for i, row in test_df.iterrows():
         result.append({
-            'subject': email['subject'],
+            'subject': row['subject'],
             'prediction': 'Spam' if predictions[i] == 1 else 'Not Spam'
         })
+
     return result
