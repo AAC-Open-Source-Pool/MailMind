@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Email to Agenda</title>
+  <link rel="icon" href="https://ik.imagekit.io/UMMI/LOGO-removebg-preview.png" />
+  <style>
+    /* ----------------- BODY & BACKGROUND ----------------- */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Courier New', Courier, monospace;
+      background: #1f1f1f;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    .background-ellipse {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 200vw;
+      height: 150vh;
+      background: radial-gradient(circle at center, #111 0%, #333 100%);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+      animation: rotateEllipse 30s linear infinite;
+      z-index: -1;
+    }
+    @keyframes rotateEllipse {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* ----------------- LOGO ----------------- */
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 100px;
+      height: 100px;
+      background: url('https://ik.imagekit.io/UMMI/LOGO-removebg-preview.png') no-repeat center/cover;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.7);
+      box-shadow: 0 0 15px rgba(255,255,255,0.7);
+      transition: transform 0.3s ease-in-out;
+      z-index: 1;
+    }
+    .logo:hover { transform: scale(1.1); }
+
+    /* ----------------- CONTAINER ----------------- */
+    .container {
+      width: 95%;
+      max-width: 1000px;
+      padding-top: 160px;
+      margin: auto;
+      z-index: 1;
+    }
+
+    /* ----------------- TOGGLE BUTTONS ----------------- */
+    .toggle-buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .toggle-button {
+      padding: 12px 25px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    .toggle-button.active {
+      background: rgba(255,255,255,0.3);
+      border-color: rgba(255,255,255,0.7);
+    }
+
+    /* ----------------- EMAIL CARDS ----------------- */
+    .email-card {
+      background: rgba(255,255,255,0.05);
+      margin: 12px 0;
+      padding: 18px 22px;
+      border-radius: 14px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.12);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      word-wrap: break-word;
+    }
+    .email-card:hover { background: rgba(255,255,255,0.12); }
+
+    .email-subject { font-weight: bold; margin-bottom: 8px; font-size: 1.05rem; }
+    .email-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+      margin-top: 10px;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .email-card.active .email-body { max-height: 2000px; }
+
+    .calendar-link {
+      display: inline-block;
+      margin-top: 5px;
+      padding: 6px 12px;
+      background: #007bff;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+
+    .no-emails {
+      margin-top: 50px;
+      text-align: center;
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    @media screen and (max-width: 600px) {
+      .container { padding-top: 130px; }
+      .email-subject { font-size: 1rem; }
+      .email-body { font-size: 0.9rem; }
+      .logo { width: 80px; height: 80px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-ellipse"></div>
+  <div class="logo"></div>
+
+  <div class="container">
+    <!-- TOGGLE BUTTONS -->
+    <div class="toggle-buttons">
+      <button class="toggle-button active" onclick="showSection('all', this)">All Emails</button>
+      <button class="toggle-button" onclick="showSection('event', this)">Event Emails</button>
+      <button class="toggle-button" onclick="showSection('summary', this)">Summaries</button>
+    </div>
+
+    <!-- ALL EMAILS -->
+    <div id="all" class="section">
+      {% if all_emails|length == 0 %}
+        <div class="no-emails">No emails found.</div>
+      {% else %}
+        {% for email in all_emails %}
+          <div class="email-card" onclick="toggleEmail(this)">
+            <div class="email-subject">{{ email.subject }}</div>
+            <div class="email-body">{{ email.body }}</div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- EVENT EMAILS -->
+    <div id="event" class="section" style="display:none;">
+      {% if event_emails|length == 0 %}
+        <div class="no-emails">No event emails.</div>
+      {% else %}
+        {% for email in event_emails %}
+          <div class="email-card" onclick="toggleEmail(this)">
+            <div class="email-subject">{{ email.subject }}</div>
+            <div class="email-body">
+              <strong>Title:</strong> {{ email.title }}<br>
+              <strong>Date:</strong> {{ email.date }}<br>
+              <strong>Start:</strong> {{ email.start_time or "00:00" }}<br>
+              <strong>End:</strong> {{ email.end_time or "01:00" }}<br>
+              <strong>Location:</strong> {{ email.location or "N/A" }}<br>
+              <strong>Description:</strong> {{ email.description or "N/A" }}<br>
+              {% if email.cal_link %}
+                <a href="{{ email.cal_link }}" target="_blank" class="calendar-link">View in Calendar</a>
+              {% else %}
+                <div style="color: rgba(255,255,255,0.5); margin-top:3px; font-size:0.9rem;">Calendar link not available</div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- SUMMARIES -->
+    <div id="summary" class="section" style="display:none;">
+      {% if summary_emails|length == 0 %}
+        <div class="no-emails">No summarized emails.</div>
+      {% else %}
+        {% for email in summary_emails %}
+          <div class="email-card" onclick="toggleEmail(this)">
+            <div class="email-subject">{{ email.subject }}</div>
+            <div class="email-body">{{ email.summary }}</div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    // Toggle email body
+    function toggleEmail(card) {
+      card.classList.toggle('active');
+    }
+
+    // Toggle sections and active button
+    function showSection(id, button) {
+      document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+
+      document.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+    }
+  </script>
+</body>
+</html>
