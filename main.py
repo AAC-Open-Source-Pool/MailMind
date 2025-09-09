@@ -20,7 +20,7 @@ Client = MongoClient(mongo_uri)
 db = Client["Emails"]
 
 # --- Flask ---
-app = Flask(name)
+app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
 # --- Hash helper ---
@@ -165,5 +165,5 @@ def logout():
     session.clear()
     return redirect("/")
 
-if name == "main":
+if __name__ == "__main__":
     app.run(debug=True)
