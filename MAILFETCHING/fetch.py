@@ -8,8 +8,11 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
-
-Client = MongoClient("mongodb+srv://umeshyenugula2007:K5vP3vmqxv8JwOjX@emails.yy5amep.mongodb.net/")
+from dotenv import load_dotenv
+import os
+load_dotenv()
+mongo_uri = os.getenv("mongo_uri")
+Client = MongoClient(mongo_uri)
 db = Client['Emails']
 TokenDB = Client['gmail_auth']
 tokens_collection = TokenDB['tokens']
@@ -18,12 +21,11 @@ SCOPES = [
     'https://www.googleapis.com/auth/gmail.modify',
     'https://www.googleapis.com/auth/calendar'
 ]
-REDIRECT_URI = "http://localhost:5000/dashboard"
+REDIRECT_URI = "http://localhost:5000/oauth2callback"
 
-# ------------------ Utils ------------------
+# ----------------- Utils ------------------
 def sanitize_email_for_collection(email):
-    return email.replace("@", "_at_").replace(".", "_dot_")
-
+    return email.replace("@", "at").replace(".", "dot")
 # ------------------ Tokens ------------------
 def load_token_from_db(email):
     try:
