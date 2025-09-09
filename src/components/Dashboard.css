@@ -193,6 +193,19 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Quick Actions */
+.quick-actions {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quick-actions .btn {
+  margin-right: 12px;
+}
+
 /* Main Content */
 .main-content {
   flex: 1;

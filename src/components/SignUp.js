@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiMail, FiUser, FiPhone, FiCalendar, FiArrowLeft, FiEye, FiEyeOff } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
-const SignUp = ({ onLogin }) => {
+const SignUp = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -85,55 +87,50 @@ const SignUp = ({ onLogin }) => {
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
       const userData = {
-        id: Date.now(),
+        email: formData.email,
+        password: formData.password,
+        name: `${formData.firstName} ${formData.lastName}`,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        email: formData.email,
         phone: formData.phone,
-        dateOfBirth: formData.dateOfBirth,
-        fullName: `${formData.firstName} ${formData.lastName}`,
-        joinedDate: new Date().toISOString(),
-        analytics: {
-          timeSaved: 0,
-          emailsAnalyzed: 0,
-          eventsCreated: 0,
-          productivityScore: 0
-        }
+        dateOfBirth: formData.dateOfBirth
       };
 
-      onLogin(userData);
-      navigate('/dashboard');
-    }, 1500);
+      const result = await register(userData);
+      
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setErrors({ general: result.error });
+      }
+    } catch (error) {
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleSignUp = () => {
+  const handleGoogleSignUp = async () => {
     setIsLoading(true);
     
-    // Simulate Google OAuth
-    setTimeout(() => {
-      const userData = {
-        id: Date.now(),
-        firstName: 'Google',
-        lastName: 'User',
-        email: 'googleuser@example.com',
-        phone: '+1234567890',
-        dateOfBirth: '1990-01-01',
-        fullName: 'Google User',
-        joinedDate: new Date().toISOString(),
-        analytics: {
-          timeSaved: 0,
-          emailsAnalyzed: 0,
-          eventsCreated: 0,
-          productivityScore: 0
-        }
-      };
-
-      onLogin(userData);
-      navigate('/dashboard');
-    }, 1500);
+    try {
+      // Get the OAuth URL from backend
+      const response = await fetch('/api/auth/google');
+      const data = await response.json();
+      
+      if (data.success && data.auth_url) {
+        // Redirect to Google OAuth
+        window.location.href = data.auth_url;
+      } else {
+        setErrors({ general: 'Failed to initiate Google OAuth' });
+        setIsLoading(false);
+      }
+    } catch (error) {
+      setErrors({ general: 'Google OAuth not available. Please use email/password registration.' });
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -182,6 +179,11 @@ const SignUp = ({ onLogin }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
+            {errors.general && (
+              <div className="error-message general-error">
+                {errors.general}
+              </div>
+            )}
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="firstName">First Name *</label>

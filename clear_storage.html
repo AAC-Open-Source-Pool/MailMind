@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Storage</title>
+</head>
+<body>
+    <h1>Clearing localStorage...</h1>
+    <p>This will clear any saved user data and force you to go through the proper authentication flow.</p>
+    <script>
+        localStorage.clear();
+        alert('localStorage cleared! You will now be redirected to the landing page.');
+        window.location.href = 'http://localhost:3000';
+    </script>
+</body>
+</html>

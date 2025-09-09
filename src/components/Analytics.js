@@ -1,15 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiClock, FiMail, FiCalendar, FiTrendingUp, FiTrendingDown, FiActivity } from 'react-icons/fi';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { analyticsAPI } from '../services/api';
 import './Analytics.css';
 
 const Analytics = ({ user }) => {
-  const analytics = user?.analytics || {
-    timeSaved: 45,
-    emailsAnalyzed: 127,
-    eventsCreated: 8,
-    productivityScore: 87
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  // Fetch analytics data from API
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setIsLoading(true);
+        const response = await analyticsAPI.getSummary();
+        if (response.data.success) {
+          setAnalyticsData(response.data.summary);
+        } else {
+          setError('Failed to fetch analytics data');
+        }
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+        setError('Failed to load analytics data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, []);
+
+  // Use API data or fallback to user data
+  const analytics = analyticsData || user?.analytics || {
+    total_emails_processed: 127,
+    spam_detected: 15,
+    events_extracted: 8,
+    average_urgency: 3,
+    processing_time: 45
   };
 
   // Sample data for charts
@@ -41,38 +69,63 @@ const Analytics = ({ user }) => {
 
   const metricCards = [
     {
-      title: 'Time Saved',
-      value: `${analytics.timeSaved}h`,
+      title: 'Emails Processed',
+      value: analytics.total_emails_processed?.toLocaleString() || '0',
       change: '+12%',
       trend: 'up',
-      icon: FiClock,
+      icon: FiMail,
       color: '#4a7c59'
     },
     {
-      title: 'Emails Analyzed',
-      value: analytics.emailsAnalyzed.toLocaleString(),
+      title: 'Spam Detected',
+      value: analytics.spam_detected || '0',
       change: '+8%',
       trend: 'up',
       icon: FiMail,
       color: '#5a8c69'
     },
     {
-      title: 'Events Created',
-      value: analytics.eventsCreated,
+      title: 'Events Extracted',
+      value: analytics.events_extracted || '0',
       change: '+25%',
       trend: 'up',
       icon: FiCalendar,
       color: '#6a9c79'
     },
     {
-      title: 'Productivity Score',
-      value: `${analytics.productivityScore}%`,
+      title: 'Processing Time',
+      value: `${analytics.processing_time || 0}s`,
       change: '+5%',
       trend: 'up',
       icon: FiActivity,
       color: '#8bc34a'
     }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="analytics">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="analytics">
+        <div className="error-container">
+          <h3>Error Loading Analytics</h3>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="btn btn-primary">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="analytics">
@@ -83,7 +136,7 @@ const Analytics = ({ user }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h2>Welcome back, {user?.firstName || 'User'}! 👋</h2>
+        <h2>Welcome back, {user?.fullName || 'User'}! 👋</h2>
         <p>Here's your productivity overview for this week</p>
       </motion.div>
 

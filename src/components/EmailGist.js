@@ -1,94 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiMail, FiSearch, FiFilter, FiClock, FiUser, FiTag, FiEye, FiArchive, FiTrash2, FiStar } from 'react-icons/fi';
+import { emailAPI } from '../services/api';
 import './EmailGist.css';
 
 const EmailGist = ({ user }) => {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEmail, setSelectedEmail] = useState(null);
+  const [emails, setEmails] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Sample email data
-  const emails = [
-    {
-      id: 1,
-      subject: 'Project Update - Q4 Milestones',
-      sender: 'manager@company.com',
-      senderName: 'Sarah Johnson',
-      summary: 'Updated project timeline with new milestones for Q4. Key deliverables include user interface redesign and backend optimization.',
-      category: 'work',
-      priority: 'high',
-      date: '2024-01-15T10:30:00',
-      read: false,
-      starred: true,
-      tags: ['project', 'milestone', 'timeline']
-    },
-    {
-      id: 2,
-      subject: 'Weekly Newsletter - Tech Updates',
-      sender: 'newsletter@techdaily.com',
-      senderName: 'Tech Daily',
-      summary: 'Latest updates in AI and machine learning. New developments in natural language processing and computer vision technologies.',
-      category: 'newsletter',
-      priority: 'low',
-      date: '2024-01-15T09:15:00',
-      read: true,
-      starred: false,
-      tags: ['AI', 'technology', 'newsletter']
-    },
-    {
-      id: 3,
-      subject: 'Invoice #INV-2024-001',
-      sender: 'billing@serviceprovider.com',
-      senderName: 'Service Provider Inc.',
-      summary: 'Invoice for cloud services and hosting fees for December 2023. Total amount: $1,250.00. Due date: January 30, 2024.',
-      category: 'billing',
-      priority: 'medium',
-      date: '2024-01-15T08:45:00',
-      read: false,
-      starred: false,
-      tags: ['invoice', 'billing', 'payment']
-    },
-    {
-      id: 4,
-      subject: 'Team Lunch Invitation',
-      sender: 'hr@company.com',
-      senderName: 'HR Department',
-      summary: 'Monthly team lunch this Friday at 12:30 PM. Location: Downtown Bistro. Please RSVP by Wednesday.',
-      category: 'personal',
-      priority: 'medium',
-      date: '2024-01-14T16:20:00',
-      read: true,
-      starred: false,
-      tags: ['team', 'lunch', 'social']
-    },
-    {
-      id: 5,
-      subject: 'Security Alert - Password Reset',
-      sender: 'security@company.com',
-      senderName: 'IT Security',
-      summary: 'Your account password has been reset. If you did not request this change, please contact IT support immediately.',
-      category: 'security',
-      priority: 'high',
-      date: '2024-01-14T14:10:00',
-      read: false,
-      starred: true,
-      tags: ['security', 'password', 'alert']
-    },
-    {
-      id: 6,
-      subject: 'Conference Registration Confirmation',
-      sender: 'events@techconf.com',
-      senderName: 'Tech Conference 2024',
-      summary: 'Your registration for Tech Conference 2024 has been confirmed. Event details and schedule attached.',
-      category: 'event',
-      priority: 'medium',
-      date: '2024-01-14T11:30:00',
-      read: true,
-      starred: false,
-      tags: ['conference', 'registration', 'event']
-    }
-  ];
+  // Fetch emails from API
+  useEffect(() => {
+    const fetchEmails = async () => {
+      try {
+        setIsLoading(true);
+        const response = await emailAPI.getEmailHistory(50);
+        if (response.data.success) {
+          setEmails(response.data.emails || []);
+        } else {
+          setError('Failed to fetch emails');
+        }
+      } catch (error) {
+        console.error('Error fetching emails:', error);
+        setError('Failed to load emails');
+        // Fallback to sample data for demo
+        setEmails([
+          {
+            id: 1,
+            subject: 'Project Update - Q4 Milestones',
+            sender: 'manager@company.com',
+            senderName: 'Sarah Johnson',
+            summary: 'Updated project timeline with new milestones for Q4. Key deliverables include user interface redesign and backend optimization.',
+            category: 'work',
+            priority: 'high',
+            date: '2024-01-15T10:30:00',
+            read: false,
+            starred: true,
+            tags: ['project', 'milestone', 'timeline']
+          },
+          {
+            id: 2,
+            subject: 'Weekly Newsletter - Tech Updates',
+            sender: 'newsletter@techdaily.com',
+            senderName: 'Tech Daily',
+            summary: 'Latest updates in AI and machine learning. New developments in natural language processing and computer vision technologies.',
+            category: 'newsletter',
+            priority: 'low',
+            date: '2024-01-15T09:15:00',
+            read: true,
+            starred: false,
+            tags: ['AI', 'technology', 'newsletter']
+          }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEmails();
+  }, []);
 
   const categories = [
     { id: 'all', label: 'All Emails', color: '#4a7c59' },
@@ -135,6 +108,31 @@ const EmailGist = ({ user }) => {
   const closeEmailDetail = () => {
     setSelectedEmail(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="email-gist">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading emails...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="email-gist">
+        <div className="error-container">
+          <h3>Error Loading Emails</h3>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="btn btn-primary">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="email-gist">

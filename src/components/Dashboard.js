@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiMail, FiCalendar, FiClock, FiTrendingUp, FiUser, FiLogOut, FiMenu, FiX, FiExternalLink } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
 import Analytics from './Analytics';
 import Calendar from './Calendar';
 import EmailGist from './EmailGist';
 import './Dashboard.css';
 
-const Dashboard = ({ user, onLogout }) => {
+const Dashboard = ({ user }) => {
+  const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState('analytics');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -58,7 +60,7 @@ const Dashboard = ({ user, onLogout }) => {
   };
 
   const handleLogout = () => {
-    onLogout();
+    logout();
   };
 
   return (
@@ -183,6 +185,39 @@ const Dashboard = ({ user, onLogout }) => {
 
         {/* Page Content */}
         <div className="page-content">
+          {/* Quick Actions */}
+          <motion.div
+            className="quick-actions"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <button 
+              className="btn btn-primary"
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/emails/process-enhanced', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ max_emails: 5 })
+                  });
+                  const result = await response.json();
+                  if (result.success) {
+                    alert(`Email processing completed! Processed ${result.processed_count} emails.`);
+                  } else {
+                    alert('Email processing failed: ' + result.error);
+                  }
+                } catch (error) {
+                  alert('Error processing emails: ' + error.message);
+                }
+              }}
+            >
+              <FiMail />
+              Process New Emails
+            </button>
+          </motion.div>
+
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 20 }}
