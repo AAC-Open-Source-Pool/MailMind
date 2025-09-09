@@ -6,6 +6,10 @@ import Dashboard from './components/Dashboard';
 import SignUp from './components/SignUp';
 import SignIn from './components/SignIn';
 import OAuthCallback from './components/OAuthCallback';
+import Layout from './components/Layout';
+import AgendaPage from './components/pages/AgendaPage';
+import CalendarEventsPage from './components/pages/CalendarEventsPage';
+import ProcessedMailsPage from './components/pages/ProcessedMailsPage';
 import './App.css';
 
 function AppRoutes() {
@@ -55,7 +59,39 @@ function AppRoutes() {
           path="/dashboard" 
           element={
             isAuthenticated ? 
-            <Dashboard user={user} /> : 
+            <Layout user={user}>
+              <Dashboard user={user} />
+            </Layout> : 
+            <Navigate to="/" replace />
+          } 
+        />
+        <Route 
+          path="/agenda" 
+          element={
+            isAuthenticated ? 
+            <Layout user={user}>
+              <AgendaPage user={user} />
+            </Layout> : 
+            <Navigate to="/" replace />
+          } 
+        />
+        <Route 
+          path="/calendar-events" 
+          element={
+            isAuthenticated ? 
+            <Layout user={user}>
+              <CalendarEventsPage user={user} />
+            </Layout> : 
+            <Navigate to="/" replace />
+          } 
+        />
+        <Route 
+          path="/processed-mails" 
+          element={
+            isAuthenticated ? 
+            <Layout user={user}>
+              <ProcessedMailsPage user={user} />
+            </Layout> : 
             <Navigate to="/" replace />
           } 
         />

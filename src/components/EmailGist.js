@@ -39,7 +39,9 @@ const EmailGist = ({ user }) => {
             date: '2024-01-15T10:30:00',
             read: false,
             starred: true,
-            tags: ['project', 'milestone', 'timeline']
+            tags: ['project', 'milestone', 'timeline'],
+            spam_detected: false,
+            event_extracted: false
           },
           {
             id: 2,
@@ -52,7 +54,9 @@ const EmailGist = ({ user }) => {
             date: '2024-01-15T09:15:00',
             read: true,
             starred: false,
-            tags: ['AI', 'technology', 'newsletter']
+            tags: ['AI', 'technology', 'newsletter'],
+            spam_detected: false,
+            event_extracted: false
           }
         ]);
       } finally {

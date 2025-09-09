@@ -1,0 +1,26 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 280px; /* Account for sidebar width */
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 0;
+    padding: 0;
+  }
+}
+
+/* Ensure proper spacing for content */
+.main-content > * {
+  width: 100%;
+  min-height: 100vh;
+}

@@ -121,7 +121,7 @@ def google_oauth():
         # Use Firebase's Google OAuth configuration
         google_oauth_url = "https://accounts.google.com/o/oauth2/v2/auth"
         client_id = config.GOOGLE_CLIENT_ID
-        redirect_uri = "http://localhost:3000/api/auth/google/callback"
+        redirect_uri = "http://localhost:5000/oauth2callback"
         scope = "https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email"
         
         # Generate state parameter for security
@@ -140,7 +140,7 @@ def google_oauth():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/auth/google/callback', methods=['GET'])
+@app.route('/oauth2callback', methods=['GET'])
 def google_oauth_callback():
     """Handle Google OAuth callback with Firebase integration"""
     try:
@@ -168,13 +168,16 @@ def google_oauth_callback():
             'client_secret': config.GOOGLE_CLIENT_SECRET,
             'code': code,
             'grant_type': 'authorization_code',
-            'redirect_uri': 'http://localhost:3000/api/auth/google/callback'
+            'redirect_uri': 'http://localhost:5000/oauth2callback'
         }
         
         token_response = requests.post(token_url, data=token_data)
         token_info = token_response.json()
         
+        print(f"🔐 Token exchange response: {token_info}")
+        
         if 'error' in token_info:
+            print(f"❌ Token exchange error: {token_info}")
             return jsonify({'error': f'Token exchange failed: {token_info["error"]}'}), 400
         
         # Get user info from Google
@@ -208,20 +211,16 @@ def google_oauth_callback():
             # Set session
             session['user_id'] = user_id
             
-            return jsonify({
-                'success': True,
-                'user': {
-                    'id': user_id,
-                    'email': user_email,
-                    'name': user_name
-                },
-                'message': 'Google authentication successful'
-            })
+            print(f"✅ OAuth success - redirecting with user data: {user_id}, {user_email}, {user_name}")
+            
+            # Redirect to OAuth callback component first
+            return redirect(f"http://localhost:3000/api/auth/google/callback?auth=success&user_id={user_id}&email={user_email}&name={user_name}")
         else:
-            return jsonify({'error': 'Failed to create/get user in Firebase'}), 500
+            return redirect("http://localhost:3000/signin?error=authentication_failed")
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"OAuth callback error: {e}")
+        return redirect("http://localhost:3000/signin?error=server_error")
 
 @app.route('/api/emails/process-enhanced', methods=['POST'])
 def process_emails_enhanced():
@@ -429,8 +428,19 @@ def get_analytics_summary():
         if not user_id:
             return jsonify({'error': 'User not authenticated'}), 401
         
-        # Get analytics from Firebase
-        analytics = firebase_service.get_user_analytics(user_id, days=30)
+        # Get analytics from Firebase (with fallback for missing indexes)
+        try:
+            analytics = firebase_service.get_user_analytics(user_id, days=30)
+        except Exception as e:
+            print(f"❌ Error retrieving analytics: {e}")
+            # Return sample analytics data when Firebase index is missing
+            analytics = {
+                'total_emails': 0,
+                'events_created': 0,
+                'spam_detected': 0,
+                'processing_time': 0,
+                'daily_stats': []
+            }
         
         if analytics:
             # Calculate summary from analytics data

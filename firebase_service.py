@@ -164,13 +164,27 @@ class FirebaseService:
             if not self.db:
                 return []
             
-            emails = self.db.collection('emails')\
-                .where('user_id', '==', user_id)\
-                .order_by('processed_at', direction=firestore.Query.DESCENDING)\
-                .limit(limit)\
-                .stream()
-            
-            return [doc.to_dict() for doc in emails]
+            # First try with ordering, if it fails, try without ordering
+            try:
+                emails = self.db.collection('emails')\
+                    .where('user_id', '==', user_id)\
+                    .order_by('processed_at', direction=firestore.Query.DESCENDING)\
+                    .limit(limit)\
+                    .stream()
+                
+                return [doc.to_dict() for doc in emails]
+            except Exception as index_error:
+                print(f"⚠️ Index error, trying without ordering: {index_error}")
+                # Fallback: get emails without ordering
+                emails = self.db.collection('emails')\
+                    .where('user_id', '==', user_id)\
+                    .limit(limit)\
+                    .stream()
+                
+                email_list = [doc.to_dict() for doc in emails]
+                # Sort manually by processed_at if available
+                email_list.sort(key=lambda x: x.get('processed_at', ''), reverse=True)
+                return email_list
             
         except Exception as e:
             print(f"❌ Error retrieving user emails: {e}")

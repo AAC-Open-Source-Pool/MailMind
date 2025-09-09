@@ -1,15 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiCalendar, FiClock, FiMapPin, FiUser, FiPlus, FiFilter, FiSearch } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiMapPin, FiUser, FiPlus, FiFilter, FiSearch, FiExternalLink } from 'react-icons/fi';
+import { emailAPI } from '../services/api';
 import './Calendar.css';
 
 const Calendar = ({ user }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [events, setEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Sample events data
-  const events = [
+  // Fetch calendar events from backend
+  useEffect(() => {
+    const fetchCalendarEvents = async () => {
+      try {
+        setIsLoading(true);
+        // For now, we'll use the email history to get events
+        // In a full implementation, you'd have a dedicated calendar events endpoint
+        const response = await emailAPI.getEmailHistory(100);
+        if (response.data.success) {
+          // Filter for event-based emails and convert to calendar events
+          const eventEmails = response.data.emails?.filter(email => 
+            email.event_extracted || email.analysis?.event_details
+          ) || [];
+          
+          const calendarEvents = eventEmails.map((email, index) => ({
+            id: email.id || index,
+            title: email.analysis?.event_details?.title || email.subject,
+            description: email.summary || email.analysis?.event_details?.description || '',
+            date: email.analysis?.event_details?.start_time?.split('T')[0] || new Date().toISOString().split('T')[0],
+            time: email.analysis?.event_details?.start_time ? 
+              new Date(email.analysis.event_details.start_time).toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+              }) : 'All Day',
+            location: email.analysis?.event_details?.location || '',
+            attendees: email.attendees || [],
+            category: email.category || 'work',
+            priority: email.priority || 'medium',
+            source: 'email',
+            calendar_link: email.analysis?.event_details?.calendar_link || '',
+            email_id: email.id
+          }));
+          
+          setEvents(calendarEvents);
+        } else {
+          setError('Failed to fetch calendar events');
+        }
+      } catch (error) {
+        console.error('Error fetching calendar events:', error);
+        setError('Failed to load calendar events');
+        // Fallback to sample data
+        setEvents([
+          {
+            id: 1,
+            title: 'Team Meeting - Q4 Planning',
+            description: 'Quarterly planning session with the development team',
+            date: '2024-01-15',
+            time: '10:00 AM - 11:30 AM',
+            location: 'Conference Room A',
+            attendees: ['john@company.com', 'sarah@company.com', 'mike@company.com'],
+            category: 'work',
+            priority: 'high',
+            source: 'email'
+          }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCalendarEvents();
+  }, []);
+
+  // Sample events data (fallback)
+  const sampleEvents = [
     {
       id: 1,
       title: 'Team Meeting - Q4 Planning',
@@ -121,6 +189,31 @@ const Calendar = ({ user }) => {
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="calendar">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading calendar events...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="calendar">
+        <div className="error-container">
+          <h3>Error Loading Calendar</h3>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="btn btn-primary">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="calendar">
@@ -263,6 +356,15 @@ const Calendar = ({ user }) => {
                     )}
 
                     <div className="event-actions">
+                      {event.calendar_link && (
+                        <button 
+                          className="btn btn-primary btn-sm"
+                          onClick={() => window.open(event.calendar_link, '_blank')}
+                        >
+                          <FiExternalLink />
+                          Open in Calendar
+                        </button>
+                      )}
                       <button className="btn btn-secondary btn-sm">Edit</button>
                       <button className="btn btn-secondary btn-sm">View Email</button>
                     </div>

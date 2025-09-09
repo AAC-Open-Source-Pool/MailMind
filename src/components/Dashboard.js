@@ -1,235 +1,325 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiMail, FiCalendar, FiClock, FiTrendingUp, FiUser, FiLogOut, FiMenu, FiX, FiExternalLink } from 'react-icons/fi';
-import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { FiMail, FiCalendar, FiClock, FiTrendingUp, FiLoader, FiList, FiInbox, FiArrowRight } from 'react-icons/fi';
+import { emailAPI, systemAPI, analyticsAPI } from '../services/api';
 import Analytics from './Analytics';
-import Calendar from './Calendar';
-import EmailGist from './EmailGist';
 import './Dashboard.css';
 
 const Dashboard = ({ user }) => {
-  const { logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('analytics');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState(null);
+  const [processingResults, setProcessingResults] = useState(null);
+  const [systemStatus, setSystemStatus] = useState(null);
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const navigationItems = [
-    {
-      id: 'analytics',
-      label: 'Analytics',
-      icon: FiTrendingUp,
-      description: 'View your productivity insights'
-    },
-    {
-      id: 'calendar',
-      label: 'Calendar',
-      icon: FiCalendar,
-      description: 'Review your events and agenda'
-    },
-    {
-      id: 'emails',
-      label: 'Email Gist',
-      icon: FiMail,
-      description: 'Non-event email summaries'
-    }
-  ];
-
-  const externalLinks = [
-    {
-      label: 'Gmail',
-      url: 'https://mail.google.com',
-      icon: FiMail
-    },
-    {
-      label: 'Google Calendar',
-      url: 'https://calendar.google.com',
-      icon: FiCalendar
-    }
-  ];
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'analytics':
-        return <Analytics user={user} />;
-      case 'calendar':
-        return <Calendar user={user} />;
-      case 'emails':
-        return <EmailGist user={user} />;
-      default:
-        return <Analytics user={user} />;
+  // Fetch dashboard stats
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await analyticsAPI.getSummary();
+      setDashboardStats(response.data);
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+      setDashboardStats({
+        total_emails: 0,
+        events_created: 0,
+        spam_detected: 0,
+        processing_time: 0,
+        daily_stats: []
+      });
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  // Check system status and fetch stats on component mount
+  useEffect(() => {
+    const checkSystemStatus = async () => {
+      try {
+        const response = await systemAPI.healthCheck();
+        if (response.data.status === 'healthy') {
+          setSystemStatus(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to check system status:', error);
+      }
+    };
+
+    checkSystemStatus();
+    fetchDashboardStats();
+  }, [refreshTrigger]);
+
+  const quickActions = [
+    {
+      id: 'agenda',
+      label: 'Email Agenda',
+      icon: FiList,
+      description: 'Non-event emails organized by priority',
+      path: '/agenda'
+    },
+    {
+      id: 'calendar-events',
+      label: 'Calendar Events',
+      icon: FiCalendar,
+      description: 'View and manage your calendar events',
+      path: '/calendar-events'
+    },
+    {
+      id: 'processed-mails',
+      label: 'Processed Mails',
+      icon: FiInbox,
+      description: 'View all processed emails with AI analysis',
+      path: '/processed-mails'
+    }
+  ];
+
+  const clearProcessingResults = () => {
+    setProcessingResults(null);
+    setProcessingStatus(null);
+  };
+
+  const navigateToPage = (path) => {
+    console.log('Navigating to:', path);
+    navigate(path);
   };
 
   return (
-    <div className="dashboard">
-      {/* Mobile Menu Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="mobile-overlay"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <motion.aside 
-        className={`sidebar ${sidebarOpen ? 'open' : ''}`}
-        initial={{ x: -300 }}
-        animate={{ x: sidebarOpen ? 0 : -300 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      >
-        <div className="sidebar-header">
-          <div className="brand">
-            <FiMail className="brand-icon" />
-            <span className="brand-text">Mailmind</span>
-          </div>
-          <button 
-            className="close-sidebar"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <FiX />
-          </button>
-        </div>
-
-        <div className="user-profile">
-          <div className="user-avatar">
-            <FiUser />
-          </div>
-          <div className="user-info">
-            <h3>{user?.fullName || 'User'}</h3>
-            <p>{user?.email || 'user@example.com'}</p>
-          </div>
-        </div>
-
-        <nav className="sidebar-nav">
-          <div className="nav-section">
-            <h4>Main Navigation</h4>
-            <ul>
-              {navigationItems.map((item) => (
-                <li key={item.id}>
-                  <button
-                    className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      setSidebarOpen(false);
-                    }}
-                  >
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="nav-section">
-            <h4>External Links</h4>
-            <ul>
-              {externalLinks.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="nav-item external"
-                  >
-                    <link.icon />
-                    <span>{link.label}</span>
-                    <FiExternalLink className="external-icon" />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </nav>
-
-        <div className="sidebar-footer">
-          <button className="logout-btn" onClick={handleLogout}>
-            <FiLogOut />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </motion.aside>
-
+    <div className="dashboard-page">
       {/* Main Content */}
-      <main className="main-content">
-        {/* Top Header */}
-        <header className="top-header">
-          <div className="header-left">
-            <button 
-              className="menu-toggle"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <FiMenu />
-            </button>
-            <div className="page-title">
-              <h1>{navigationItems.find(item => item.id === activeTab)?.label}</h1>
-              <p>{navigationItems.find(item => item.id === activeTab)?.description}</p>
-            </div>
-          </div>
-          
-          <div className="header-right">
-            <div className="user-menu">
-              <div className="user-avatar-small">
-                <FiUser />
-              </div>
-              <div className="user-details">
-                <span className="user-name">{user?.fullName || 'User'}</span>
-                <span className="user-email">{user?.email || 'user@example.com'}</span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <div className="page-content">
-          {/* Quick Actions */}
-          <motion.div
-            className="quick-actions"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <button 
-              className="btn btn-primary"
-              onClick={async () => {
-                try {
-                  const response = await fetch('/api/emails/process-enhanced', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ max_emails: 5 })
-                  });
-                  const result = await response.json();
-                  if (result.success) {
-                    alert(`Email processing completed! Processed ${result.processed_count} emails.`);
-                  } else {
-                    alert('Email processing failed: ' + result.error);
-                  }
-                } catch (error) {
-                  alert('Error processing emails: ' + error.message);
-                }
-              }}
-            >
-              <FiMail />
-              Process New Emails
-            </button>
-          </motion.div>
-
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {renderContent()}
-          </motion.div>
+      <div className="dashboard-content">
+        {/* Header */}
+        <div className="dashboard-header">
+          <h1>📊 Dashboard</h1>
+          <p>Welcome back, {user?.fullName || 'User'}! Here's your email management overview.</p>
         </div>
-      </main>
+
+        {/* Quick Actions */}
+        <motion.div
+          className="quick-actions-section"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <h2>🚀 Quick Actions</h2>
+          <div className="quick-actions-grid">
+            {quickActions.map((action) => (
+              <motion.button
+                key={action.id}
+                className="quick-action-card"
+                onClick={() => navigateToPage(action.path)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="action-icon">
+                  <action.icon />
+                </div>
+                <div className="action-content">
+                  <h3>{action.label}</h3>
+                  <p>{action.description}</p>
+                </div>
+                <div className="action-arrow">
+                  <FiArrowRight />
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Email Processing */}
+        <motion.div
+          className="email-processing-section"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <h2>📧 Process New Emails</h2>
+          <button 
+            className="process-emails-btn"
+            disabled={isProcessing}
+            onClick={async () => {
+              try {
+                setIsProcessing(true);
+                setProcessingStatus('Starting email processing...');
+                
+                const response = await emailAPI.processEmailsEnhanced(5);
+                
+                if (response.data.success) {
+                  setProcessingStatus(`✅ Successfully processed ${response.data.processed_count} emails!`);
+                  
+                  // Store processing results for navigation
+                  setProcessingResults({
+                    processed_count: response.data.processed_count,
+                    summary: response.data.summary,
+                    calendar_events: response.data.calendar_events || [],
+                    emails_processed: response.data.emails_processed || []
+                  });
+                  
+                  // Refresh dashboard stats
+                  setRefreshTrigger(prev => prev + 1);
+                } else {
+                  setProcessingStatus('❌ Email processing failed: ' + response.data.error);
+                  setProcessingResults(null);
+                }
+              } catch (error) {
+                const errorMessage = error.response?.data?.error || error.message;
+                setProcessingStatus('❌ Error: ' + errorMessage);
+                setProcessingResults(null);
+              } finally {
+                setIsProcessing(false);
+              }
+            }}
+          >
+            {isProcessing ? <FiLoader className="spinning" /> : <FiMail />}
+            {isProcessing ? 'Processing...' : 'Process New Emails'}
+          </button>
+          
+          {/* Processing Status */}
+          {processingStatus && (
+            <motion.div 
+              className="processing-status"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <p>{processingStatus}</p>
+            </motion.div>
+          )}
+
+          {/* Processing Results */}
+          {processingResults && (
+            <motion.div 
+              className="processing-results"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="results-header">
+                <h3>📧 Email Processing Complete!</h3>
+                <button 
+                  className="btn-close"
+                  onClick={clearProcessingResults}
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="results-summary">
+                <div className="summary-stats">
+                  <div className="stat-item">
+                    <span className="stat-number">{processingResults.processed_count}</span>
+                    <span className="stat-label">Emails Processed</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-number">{processingResults.summary?.events_extracted || 0}</span>
+                    <span className="stat-label">Events Found</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-number">{processingResults.summary?.spam_detected || 0}</span>
+                    <span className="stat-label">Spam Detected</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-number">{processingResults.calendar_events.length}</span>
+                    <span className="stat-label">Calendar Events</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="results-actions">
+                <h4>View Your Processed Emails:</h4>
+                <div className="action-buttons">
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => navigateToPage('/processed-mails')}
+                  >
+                    <FiInbox />
+                    View All Processed Mails
+                  </button>
+                  
+                  {processingResults.summary?.events_extracted > 0 && (
+                    <button 
+                      className="btn btn-secondary"
+                      onClick={() => navigateToPage('/calendar-events')}
+                    >
+                      <FiCalendar />
+                      View Calendar Events
+                    </button>
+                  )}
+                  
+                  <button 
+                    className="btn btn-secondary"
+                    onClick={() => navigateToPage('/agenda')}
+                  >
+                    <FiList />
+                    View Email Agenda
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Dashboard Stats */}
+        {dashboardStats && (
+          <motion.div 
+            className="dashboard-stats-section"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <h2>📊 Your Email Analytics</h2>
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-icon">
+                  <FiMail />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-number">{dashboardStats.total_emails || 0}</span>
+                  <span className="stat-label">Total Emails</span>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">
+                  <FiCalendar />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-number">{dashboardStats.events_created || 0}</span>
+                  <span className="stat-label">Events Created</span>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">
+                  <FiTrendingUp />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-number">{dashboardStats.spam_detected || 0}</span>
+                  <span className="stat-label">Spam Detected</span>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">
+                  <FiClock />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-number">{Math.round(dashboardStats.processing_time || 0)}s</span>
+                  <span className="stat-label">Avg Processing</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Analytics Component */}
+        <motion.div
+          className="analytics-section"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
+        >
+          <Analytics user={user} />
+        </motion.div>
+      </div>
     </div>
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

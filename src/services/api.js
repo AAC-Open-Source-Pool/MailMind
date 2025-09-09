@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with default configuration
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'http://localhost:5000/api',
   withCredentials: true, // Important for session cookies
   headers: {
     'Content-Type': 'application/json',
@@ -42,6 +42,8 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   login: (credentials) => api.post('/auth/login', credentials),
   logout: () => api.post('/auth/logout'),
+  googleAuth: () => api.get('/auth/google'),
+  googleCallback: (code, state) => api.get(`/auth/google/callback?code=${code}&state=${state}`),
 };
 
 // Email API calls

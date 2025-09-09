@@ -15,12 +15,36 @@ const OAuthCallback = () => {
   useEffect(() => {
     const handleOAuthCallback = async () => {
       try {
-        // Get the authorization code from URL parameters
+        // Check if this is a redirect from successful OAuth
         const urlParams = new URLSearchParams(location.search);
-        const code = urlParams.get('code');
-        const state = urlParams.get('state');
-        const error = urlParams.get('error');
+        const auth = urlParams.get('auth');
+        const userId = urlParams.get('user_id');
+        const email = urlParams.get('email');
+        const name = urlParams.get('name');
 
+        if (auth === 'success' && userId && email) {
+          setStatus('success');
+          setMessage('Authentication successful! Redirecting to dashboard...');
+          
+          // Update the auth context with the user data
+          const userData = {
+            id: userId,
+            email: decodeURIComponent(email),
+            fullName: name ? decodeURIComponent(name) : email.split('@')[0]
+          };
+          
+          console.log('OAuth success - setting user data:', userData);
+          
+          // Set the user in the auth context
+          setOAuthUser(userData);
+          
+          // Redirect to dashboard after a short delay
+          setTimeout(() => navigate('/dashboard'), 2000);
+          return;
+        }
+
+        // If not a success redirect, check for error
+        const error = urlParams.get('error');
         if (error) {
           setStatus('error');
           setMessage('Authentication was cancelled or failed.');
@@ -28,42 +52,11 @@ const OAuthCallback = () => {
           return;
         }
 
-        if (!code) {
-          setStatus('error');
-          setMessage('No authorization code received.');
-          setTimeout(() => navigate('/signin'), 3000);
-          return;
-        }
-
-        // Call the backend to exchange code for tokens
-        const response = await fetch(`/api/auth/google/callback?code=${code}&state=${state}`, {
-          method: 'GET',
-          credentials: 'include'
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          setStatus('success');
-          setMessage('Authentication successful! Redirecting to dashboard...');
-          
-          // Update the auth context with the user data
-          const userData = {
-            id: data.user.id,
-            email: data.user.email,
-            fullName: data.user.name
-          };
-          
-          // Set the user in the auth context
-          setOAuthUser(userData);
-          
-          // Redirect to dashboard after a short delay
-          setTimeout(() => navigate('/dashboard'), 2000);
-        } else {
-          setStatus('error');
-          setMessage(data.error || 'Authentication failed.');
-          setTimeout(() => navigate('/signin'), 3000);
-        }
+        // If no success or error, this might be a direct access
+        setStatus('error');
+        setMessage('Invalid OAuth callback. Please try signing in again.');
+        setTimeout(() => navigate('/signin'), 3000);
+        
       } catch (error) {
         console.error('OAuth callback error:', error);
         setStatus('error');

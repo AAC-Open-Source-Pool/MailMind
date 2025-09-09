@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiMail, FiLock, FiArrowLeft, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiMail, FiArrowLeft, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
+import { authAPI } from '../services/api';
 import './Auth.css';
 
 const SignIn = () => {
@@ -15,6 +16,7 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -48,6 +50,24 @@ const SignIn = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsGoogleLoading(true);
+      const response = await authAPI.googleAuth();
+      if (response.data.success) {
+        // Redirect to Google OAuth
+        window.location.href = response.data.auth_url;
+      } else {
+        alert('Google authentication failed: ' + response.data.error);
+      }
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      alert('Google sign-in failed. Please try again.');
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -72,27 +92,6 @@ const SignIn = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    
-    try {
-      // Get the OAuth URL from backend
-      const response = await fetch('/api/auth/google');
-      const data = await response.json();
-      
-      if (data.success && data.auth_url) {
-        // Redirect to Google OAuth
-        window.location.href = data.auth_url;
-      } else {
-        setErrors({ general: 'Failed to initiate Google OAuth' });
-        setIsLoading(false);
-      }
-    } catch (error) {
-      setErrors({ general: 'Google OAuth not available. Please use email/password login.' });
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="auth-container">
       <div className="auth-background">
@@ -110,10 +109,6 @@ const SignIn = () => {
             <FiArrowLeft />
             Back to Home
           </Link>
-          <div className="auth-brand">
-            <FiMail className="brand-icon" />
-            <span className="brand-text">Mailmind</span>
-          </div>
         </div>
 
         <div className="auth-content">
@@ -123,7 +118,7 @@ const SignIn = () => {
           <button 
             className="btn btn-google"
             onClick={handleGoogleSignIn}
-            disabled={isLoading}
+            disabled={isGoogleLoading}
           >
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -131,7 +126,7 @@ const SignIn = () => {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            Continue with Google
+            {isGoogleLoading ? 'Connecting...' : 'Continue with Google'}
           </button>
 
           <div className="divider">
@@ -209,4 +204,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn; 
+export default SignIn;
