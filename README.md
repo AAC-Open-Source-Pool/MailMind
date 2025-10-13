@@ -1,82 +1,152 @@
 # 25AACR13
-Mailify - Mail to Agenda
-<div style="display: flex; align-items: center;"> <img src="" alt="icon" style="height:100px;width:100px;"> </div>
-Table of Contents
 
-Introduction
- <br>
+# Mailify – Mail to Agenda
+<img src="" alt="icon" width="100" height="100">
 
-Requirements
- <br>
+## Table of Contents
+- [Introduction](#introduction)
+- [Requirements](#requirements)
+- [How to use](#installation-and-usage)
+- [Preview](#preview)
+- [Team](#team-details)
+- [Contribution](#contribution)
+- [Improvements](#improvements)
 
-How to use
- <br>
+---
 
-Preview
- <br>
+## Introduction
+**Mailify – Mail to Agenda** is an AI-powered email automation system that classifies non-spam emails into **event-based** and **non-event-based** categories.  
+Event-based emails are automatically added to **Google Calendar**, while non-event-based emails are **sorted by priority** for better inbox management.  
 
-Team
- <br>
+Built with **Python, NLP, Machine Learning, and Google APIs**, Mailify transforms the chaos of daily emails into structured, actionable information — a tool for anyone who values organization and time.
 
-Contribution
- <br>
+---
 
-Improvements
+## Requirements
+| Dependency | Version |
+|-------------|----------|
+| Python | 3.10 or above |
+| pandas | ≥ 1.5.0 |
+| numpy | ≥ 1.21.0 |
+| scikit-learn | ≥ 1.7.0 |
+| google-auth | ≥ 2.0.0 |
+| google-auth-oauthlib | ≥ 0.8.0 |
+| google-auth-httplib2 | ≥ 0.1.0 |
+| google-api-python-client | ≥ 2.0.0 |
+| firebase-admin | ≥ 6.2.0 |
+| spacy | ≥ 3.5.0 |
+| transformers | ≥ 4.20.0 |
+| torch | ≥ 1.12.0 |
+| beautifulsoup4 | ≥ 4.11.0 |
+| requests | ≥ 2.28.0 |
+| google-generativeai | ≥ 0.3.0 |
+| flask | ≥ 2.3.0 |
+| flask-cors | ≥ 4.0.0 |
+| python-dotenv | ≥ 0.19.0 |
 
-Abstract
-<p align="left"> Mailify – Mail to Agenda is a smart email classification system that filters incoming non-spam mails into two distinct categories: Event-based and Non-event-based. Event-related emails are automatically integrated into Google Calendar, ensuring users never miss an important meeting or occasion. Non-event-based emails are sorted by priority, allowing for a cleaner and more productive inbox. The project leverages NLP, machine learning, and Google APIs to deliver a seamless automation experience. </p>
-Requirements
-	
-Python	3.10 or above
-See all dependencies	Listed in requirements.txt
-Installation and usage
+> All dependencies are listed in the `requirements.txt` file for easy installation.
 
-To run the project locally:
+---
 
+## Installation and Usage
+
+he list of dependencies and versions is available in the file [`requirements.txt`](./requirements.txt).  
+To install all the required dependencies, simply run:
+
+```bash
+pip install -r requirements.txt
+```
+Ensure that Python and Node.js are installed on your system before running the project.
+
+Installation & Usage
+Follow these steps to set up and run the project on your local machine:
+
+## How to Use
+
+Follow these steps to install and run the project on your local machine:
+
+```bash
+## Step 1: Clone the Repository
+git clone https://github.com/yourusername/mailify.git
+cd mailify
+```
+## Step 2: Set Up Python Environment
+python -m venv venv
+## macOS/Linux
+source venv/bin/activate
+## Windows
+venv\Scripts\activate
+
+## Step 3: Install Python Dependencies
+pip install -r requirements.txt
+
+## Step 4: Install Node Modules (for frontend)
+npm install
+
+## Step 5: Configure Google Calendar API
+# 1. Go to Google Cloud Console: https://console.cloud.google.com/
+# 2. Enable Google Calendar API.
+# 3. Create credentials and download the credentials.json file.
+# 4. Place the file in the root directory of the project.
+# 5. Set up OAuth permissions as required.
+
+# Step 6: Run the Backend
 python main.py
+
+# Step 7: Run the Frontend
 npm start
 
-Preview
+## Step 8: Access the Application
+# Open your browser and visit http://localhost:3000
+# The system will:
+# - Classify non-spam emails into event-based and non-event-based.
+# - Automatically add event-based emails to Google Calendar.
+# - Prioritize non-event-based emails.
+---
+## Preview
 
-Screenshots of the project<br>
-<img src="">
-<img src="">
+Screenshots of the project will be added manually. Replace the placeholders with actual image paths.
 
-Team details
+| Screenshot | Description |
+|------------|-------------|
+| ![Screenshot 1](path/to/screenshot1.png) | Main dashboard of Mailify |
+| ![Screenshot 2](path/to/screenshot2.png) | Event added to Google Calendar |
 
-<b>Team Number: </b><p>25AACR13</p>
-<b>Senior Mentor:</b><p>Siddharth Mahesh</p>
-<b>Junior Mentor:</b><p>Aluri Surya Teja</p>
-<b>Team Member 1:</b><p>Vinjanampati Raga Gowtami</p>
-<b>Team Member 2:</b><p>Harshith Gottipati</p>
-<b>Team Member 3:</b><p>Umesh Chandra Yenugula</p>
-<b>Team Member 4:</b><p>K. Bhanu Prakash</p>
-<b>Team Member 5:</b><p>Rida Md</p>
+---
 
-Contribution
+## Team Details
 
-This section provides instructions and details on how to submit a contribution via a pull request. It is important to follow these guidelines to make sure your pull request is accepted.
+| Role | Name |
+|------|------|
+| Team Number | 25AACR13 |
+| Senior Mentor | Siddharth Mahesh |
+| Junior Mentor | Aluri Surya Teja |
+| Team Member 1 | Vinjanampati Raga Gowtami |
+| Team Member 2 | Harshith |
+| Team Member 3 | Umesh Chandra Yenugula |
+| Team Member 4 | K. Bhanu Prakash |
+| Team Member 5 | Rida Md |
 
-Before choosing to propose changes to this project, it is advisable to go through the README.md file of the project to understand the philosophy and the motive behind it. The pull request should align with the original intent of the project.
+---
 
-To add your changes, ensure that the programming language and library versions match those specified in the project.
+## Contribution
 
-Provide documentation describing the issues noticed (if any), your proposed changes, the reasons for them, and relevant test cases.
+We welcome contributions to improve Mailify. Please follow these guidelines:
 
-Submit a pull request via Git etiquettes
-.
+1. Read the README.md and understand the project’s goal and workflow.
+2. Use the same programming languages and dependency versions as in the project.
+3. Document your proposed changes clearly, including any issues you found, your solution, and test cases.
+4. Submit a pull request following proper [Git etiquettes](https://gist.github.com/mikepea/863f63d6e37281e329f8).
 
-Improvements
+---
 
-The future scope of Mailify lies in enhancing automation and personalization.
-Potential upgrades include:
+## Improvements
 
-Integration with multiple mail services beyond Gmail.
+Mailify aims to expand into a full-featured productivity assistant. Future improvements may include:
 
-Advanced NLP to detect nuanced event contexts and sentiments.
-
-Real-time calendar synchronization with reminders.
-
-Personalized dashboard with analytics on mail patterns and productivity.
-
-Expanding the system to include team-based scheduling and collaboration features.
+- Integration with additional email services (Outlook, Yahoo, etc.)
+- Advanced NLP for smarter event detection and sentiment analysis
+- Real-time Google Calendar synchronization with reminders
+- AI-generated summaries of email threads
+- Analytics dashboard for tracking email and productivity trends
+- Cross-platform UI for desktop and mobile notifications
