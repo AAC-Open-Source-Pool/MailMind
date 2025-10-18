@@ -122,8 +122,8 @@ Screenshots of the project will be added manually. Replace the placeholders with
 | Senior Mentor | Siddharth Mahesh |
 | Junior Mentor | Aluri Surya Teja |
 | Team Member 1 | Vinjanampati Raga Gowtami |
-| Team Member 2 | Harshith Gottipati|
-| Team Member 3 | Umesh Chandra Yenugula |
+| Team Member 2 | Umesh Chandra Yenugula|
+| Team Member 3 | Harshith Gottipati |
 | Team Member 4 | K. Bhanu Prakash |
 | Team Member 5 | Rida Md |
 
