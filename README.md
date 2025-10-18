@@ -1,7 +1,8 @@
 # 25AACR13
 
-# Mailify – Mail to Agenda
-<img src="" alt="icon" width="100" height="100">
+# Mailmind – Mail to Agenda
+<img src="<img width="200" height="68" alt="Screenshot 2025-10-18 at 2 54 15 PM" src="https://github.com/user-attachments/assets/45c65345-42a8-405b-ae27-6ee52f513d17" />
+" alt="icon" width="100" height="100">
 
 ## Table of Contents
 - [Introduction](#introduction)
