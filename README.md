@@ -1,7 +1,7 @@
 # 25AACR13
 
 # Mailmind – Mail to Agenda
-<img src="<img width="200" height="68" alt="Screenshot 2025-10-18 at 2 54 15 PM" src="https://github.com/user-attachments/assets/45c65345-42a8-405b-ae27-6ee52f513d17" />
+<img width="200" height="68" alt="Screenshot 2025-10-18 at 2 54 15 PM" src="https://github.com/user-attachments/assets/45c65345-42a8-405b-ae27-6ee52f513d17" />
 
 ## Table of Contents
 - [Introduction](#introduction)
