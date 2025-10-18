@@ -110,8 +110,7 @@ Screenshots of the project will be added manually. Replace the placeholders with
 | Screenshot | Description |
 |------------|-------------|
 |<img width="1451" height="658" alt="Screenshot 2025-10-18 at 3 00 16 PM" src="https://github.com/user-attachments/assets/74a05a3b-81f6-4c87-b396-d1e2382f391e" />| Main dashboard of Mailify |
-| <img width="1069" height="601" alt="Screenshot 2025-10-18 at 3 04 21 PM" src="https://github.com/user-attachments/assets/91fc9e09-3baf-41ce-9cef-0dad7e31caef" />
-| Event added to Google Calendar |
+| <img width="1069" height="601" alt="Screenshot 2025-10-18 at 3 04 21 PM" src="https://github.com/user-attachments/assets/91fc9e09-3baf-41ce-9cef-0dad7e31caef" />| Event added to Google Calendar |
 
 ---
 
