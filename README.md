@@ -15,7 +15,7 @@
 ---
 
 ## Introduction
-**Mailify – Mail to Agenda** is an AI-powered email automation system that classifies non-spam emails into **event-based** and **non-event-based** categories.  
+**Mailmind – Mail to Agenda** is an AI-powered email automation system that classifies non-spam emails into **event-based** and **non-event-based** categories.  
 Event-based emails are automatically added to **Google Calendar**, while non-event-based emails are **sorted by priority** for better inbox management.  
 
 Built with **Python, NLP, Machine Learning, and Google APIs**, Mailify transforms the chaos of daily emails into structured, actionable information — a tool for anyone who values organization and time.
@@ -72,9 +72,9 @@ cd mailify
 ```
 ## Step 2: Set Up Python Environment
 python -m venv venv
-# macOS/Linux
+## macOS/Linux
 source venv/bin/activate
-# Windows
+## Windows
 venv\Scripts\activate
 
 ## Step 3: Install Python Dependencies
@@ -131,7 +131,7 @@ Screenshots of the project will be added manually. Replace the placeholders with
 
 ## Contribution
 
-We welcome contributions to improve Mailify. Please follow these guidelines:
+We welcome contributions to improve Mailmind. Please follow these guidelines:
 
 1. Read the README.md and understand the project’s goal and workflow.
 2. Use the same programming languages and dependency versions as in the project.
@@ -142,7 +142,7 @@ We welcome contributions to improve Mailify. Please follow these guidelines:
 
 ## Improvements
 
-Mailify aims to expand into a full-featured productivity assistant. Future improvements may include:
+Mailmind aims to expand into a full-featured productivity assistant. Future improvements may include:
 
 - Integration with additional email services (Outlook, Yahoo, etc.)
 - Advanced NLP for smarter event detection and sentiment analysis
