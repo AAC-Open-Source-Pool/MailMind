@@ -72,9 +72,9 @@ cd mailify
 ```
 ## Step 2: Set Up Python Environment
 python -m venv venv
-## macOS/Linux
+# macOS/Linux
 source venv/bin/activate
-## Windows
+# Windows
 venv\Scripts\activate
 
 ## Step 3: Install Python Dependencies
@@ -84,24 +84,24 @@ pip install -r requirements.txt
 npm install
 
 ## Step 5: Configure Google Calendar API
-# 1. Go to Google Cloud Console: https://console.cloud.google.com/
-# 2. Enable Google Calendar API.
-# 3. Create credentials and download the credentials.json file.
-# 4. Place the file in the root directory of the project.
-# 5. Set up OAuth permissions as required.
+ 1. Go to Google Cloud Console: https://console.cloud.google.com/
+ 2. Enable Google Calendar API.
+ 3. Create credentials and download the credentials.json file.
+ 4. Place the file in the root directory of the project.
+ 5. Set up OAuth permissions as required.
 
-# Step 6: Run the Backend
+## Step 6: Run the Backend
 python main.py
 
-# Step 7: Run the Frontend
+## Step 7: Run the Frontend
 npm start
 
 ## Step 8: Access the Application
-# Open your browser and visit http://localhost:3000
-# The system will:
-# - Classify non-spam emails into event-based and non-event-based.
-# - Automatically add event-based emails to Google Calendar.
-# - Prioritize non-event-based emails.
+ Open your browser and visit http://localhost:3000
+ The system will:
+ - Classify non-spam emails into event-based and non-event-based.
+ - Automatically add event-based emails to Google Calendar.
+ - Prioritize non-event-based emails.
 ---
 ## Preview
 
