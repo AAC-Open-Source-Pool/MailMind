@@ -1,59 +1,76 @@
-from google import genai
+import google.generativeai as genai
 import json, re, datetime
 from pymongo import MongoClient
-from calender import setcalender  # import your calendar module here
+from calender import add_events_to_calendar
+import os
+from dotenv import load_dotenv
 
-client = genai.Client(api_key="AIzaSyDbLNXRxyqlvD-VOOsb-QLXh3cd8a4YE7U")
+# Load env
+load_dotenv()
 
-db_client = MongoClient("mongodb+srv://umeshyenugula2007:K5vP3vmqxv8JwOjX@emails.yy5amep.mongodb.net/")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+# MongoDB setup
+db_client = MongoClient(os.getenv("mongo_uri"))
 db = db_client['Emails']
+
+# Create model instance ONCE
+model = genai.GenerativeModel("models/gemini-2.0-flash-001")
+
 
 def extract_event(email_body):
     if isinstance(email_body, tuple):
         email_body = email_body[0]
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=f"""
-Extract event details from this email and return JSON with keys:
-"title", "date", "start_time", "end_time", "location", "description". 
+    prompt = f"""
+Extract an EVENT from this email if any exists.
+Return JSON with fields: "title", "date", "start_time", "end_time", "location", "description".
+If no event → return {{}}
 Email:
 \"\"\"{email_body}\"\"\""""
-    )
-    text = response.text.strip()
-    match = re.search(r'({.*})', text, re.DOTALL)
-    if not match:
-        return None
+
     try:
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+
+        match = re.search(r'({.*})', text, re.DOTALL)
+        if not match:
+            return None
+
         event = json.loads(match.group(1))
+
         if not event.get("title") or not event.get("date"):
             return None
-        # Fill missing times
-        if not event.get("start_time"):
-            event["start_time"] = "00:00"
-        if not event.get("end_time"):
-            event["end_time"] = "01:00"
+
+        event.setdefault("start_time", "00:00")
+        event.setdefault("end_time", "01:00")
+        event.setdefault("location", "N/A")
+        event.setdefault("description", "")
+
         return event
-    except:
+
+    except Exception as e:
+        print(f"[ERROR extract_event]: {e}")
         return None
+
 
 def summarize_email(email_body):
     if isinstance(email_body, tuple):
         email_body = email_body[0]
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=f"""
-Summarize the following email in 2-3 sentences:
-\"\"\"{email_body}\"\"\""""
-    )
-    return response.text.strip()
+
+    prompt = f"Summarize the following email in 2-3 concise sentences:\n\"\"\"{email_body}\"\"\""
+
+    try:
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        print(f"[ERROR summarize_email]: {e}")
+        return None
+
 
 def cache_and_add_event(user_id, email_id, creds, event_details):
-    """
-    Save the event in MongoDB and add to Google Calendar immediately.
-    Returns the Google Calendar link if successful.
-    """
     events_collection = db[f"{user_id}_events"]
+
     existing = events_collection.find_one({"email_id": email_id})
     if not existing:
         events_collection.insert_one({
@@ -62,10 +79,9 @@ def cache_and_add_event(user_id, email_id, creds, event_details):
             "added_at": datetime.datetime.utcnow()
         })
 
-    # Add to Google Calendar and return link
     try:
-        cal_link = setcalender.add_events_to_calendar(creds, event_details)
+        cal_link = add_events_to_calendar(creds, event_details)
         return cal_link
     except Exception as e:
-        print(f"[ERROR] Adding to calendar: {e}")
+        print(f"[ERROR adding to calendar]: {e}")
         return None
